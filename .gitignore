@@ -1,8 +1,48 @@
-.env
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+
+# Virtual Environment
 venv/
+env/
 .venv/
+
+# Environment Variables (NEVER commit secrets!)
+.env
+.env.local
+.env.production
+
+# Database files
 db.sqlite3
-.idea/
+*.db
+
+# Docker
+docker-compose.override.yml
+
+# IDE
 .vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Media and static (collected)
+/staticfiles/
+/media/
+
+# Logs
+*.log
+
+# SSH keys (Seminar 5)
+*.pem
+id_ed25519
+id_ed25519.pub
