@@ -1,0 +1,30 @@
+{% extends "study_planner_app/base.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1>Your Tasks</h1>
+    <a href="{% url 'task_create' %}" class="btn btn-primary">+ Task</a>
+</div>
+
+<div style="display: grid; gap: 1rem;">
+    {% for task in tasks %}
+    <div style="padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <a href="{% url 'task_detail' task.pk %}" style="text-decoration: none; font-weight: 600; color: var(--text-main);">
+                {{ task.title }}
+            </a>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">
+                {% if task.due_date %}{{ task.due_date }}{% else %}No deadline{% endif %}
+            </p>
+        </div>
+        {% if task.status == 'done' %}
+            <span style="color: var(--success); font-weight: bold;">Done</span>
+        {% else %}
+            <span style="color: var(--primary); font-size: 0.8rem; background: #eef2ff; padding: 2px 8px; border-radius: 12px;">In Progress</span>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p style="text-align: center; color: var(--text-muted); padding: 2rem;">No tasks yet. Time to study!</p>
+    {% endfor %}
+</div>
+{% endblock %}

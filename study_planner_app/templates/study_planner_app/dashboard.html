@@ -1,0 +1,18 @@
+{% extends "study_planner_app/base.html" %}
+
+{% block content %}
+<h1>Welcome back, {{ user.username }}!</h1>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+    <div style="background: #eef2ff; padding: 1.5rem; border-radius: 10px; border-left: 4px solid var(--primary);">
+        <p style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase;">Total Tasks</p>
+        <p style="font-size: 1.5rem; font-weight: 700;">{{ total_tasks }}</p>
+    </div>
+    <div style="background: #ecfdf5; padding: 1.5rem; border-radius: 10px; border-left: 4px solid var(--success);">
+        <p style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase;">Completed</p>
+        <p style="font-size: 1.5rem; font-weight: 700;">{{ completed_tasks }}</p>
+    </div>
+</div>
+
+<a href="{% url 'task_create' %}" class="btn btn-primary">Add New Task</a>
+{% endblock %}

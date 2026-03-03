@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Study Planner{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'study_planner_app/style.css' %}">
+    <link rel="stylesheet" href="{% static 'study_planner_app/root.css' %}">
+</head>
+<body>
+
+<nav>
+    <a href="{% url 'dashboard' %}" class="nav-logo">StudyFlow</a>
+    <div class="nav-links">
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <a href="{% url 'task_list' %}">Tasks</a>
+        <a href="{% url 'subject_list' %}">Subjects</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'logout' %}" style="color: var(--danger);">Logout</a>
+        {% else %}
+            <a href="{% url 'login' %}">Login</a>
+        {% endif %}
+    </div>
+</nav>
+
+<main>
+    <div class="container card">
+        {% block content %}
+        {% endblock %}
+    </div>
+</main>
+
+</body>
+</html>
