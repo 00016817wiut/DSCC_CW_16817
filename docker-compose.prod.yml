@@ -13,8 +13,9 @@ services:
     env_file:
       - .env.production
     command: >
-      sh -c "python manage.py collectstatic --noinput &&
-                 gunicorn --config gunicorn.conf.py study_planner.wsgi:application"
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             gunicorn --config gunicorn.conf.py study_planner.wsgi:application"
 #    environment:
 #      - DJANGO_SETTINGS_MODULE=config.settings.production
     depends_on:
@@ -23,11 +24,11 @@ services:
       redis:
         condition: service_started
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/', timeout=5).read()"]
+       interval: 30s
+       timeout: 10s
+       retries: 3
+       start_period: 40s
     networks:
       - app_network
 
@@ -56,14 +57,13 @@ services:
       - app_network
 
   nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
+    image: nginx:latest
     restart: always
     ports:
       - "80:80"
       - "443:443"
     volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - static_volume:/app/staticfiles:ro
       - media_volume:/app/media:ro
     depends_on:

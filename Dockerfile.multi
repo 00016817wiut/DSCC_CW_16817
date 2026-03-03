@@ -1,33 +1,48 @@
-# Multi-stage build - Production optimized
-# Stage 1: Builder
-FROM python:3.11-slim AS builder
-WORKDIR /app
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
- gcc \
- libpq-dev \
- && rm -rf /var/lib/apt/lists/*
-# Create virtual environment
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+# Multi-stage build (student-friendly, smaller image)
 
-# Install Python dependencies
+# Stage 1: build wheels (Alpine for smaller images)
+FROM python:3.11-alpine AS builder
+
+WORKDIR /build
+
+RUN apk add --no-cache \
+    build-base \
+    postgresql-dev
+
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-# Stage 2: Production
-FROM python:3.11-slim AS production
+
+# Build wheels so the final image does not need build tools
+RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
+
+
+# Stage 2: runtime
+FROM python:3.11-alpine AS production
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
 WORKDIR /app
-# Install only runtime dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
- libpq5 \
- && rm -rf /var/lib/apt/lists/* \
- && apt-get clean
-# Copy virtual environment from builder
-COPY --from=builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-# Copy application code
-COPY . .
-# Collect static files
-# RUN python manage.py collectstatic --noinput # remove it temporary for fixes
+
+RUN apk add --no-cache \
+    libpq
+
+# Create non-root user
+RUN addgroup -g 1000 -S appgroup \
+  && adduser -u 1000 -S -G appgroup appuser
+
+COPY --from=builder /wheels /wheels
+
+RUN pip install --no-cache-dir /wheels/* \
+  && rm -rf /wheels
+
+COPY --chown=appuser:appgroup . .
+
+RUN mkdir -p /app/staticfiles /app/media \
+  && chown -R appuser:appgroup /app/staticfiles /app/media
+
+USER appuser
+
 EXPOSE 8000
+
+# Migrate/collectstatic are done in docker-compose command
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "study_planner.wsgi:application"]
