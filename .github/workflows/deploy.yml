@@ -74,13 +74,10 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
+          port: 22
           script_stop: true
           script: |
-            set -e
+            whoami
+            hostname
             cd /opt/study_planner
-            git pull origin main
-            docker compose -f docker-compose.prod.yml up -d --build --remove-orphans
-            docker compose -f docker-compose.prod.yml exec -T web python manage.py migrate --noinput
-            docker compose -f docker-compose.prod.yml exec -T web python manage.py collectstatic --noinput
-            curl -f http://127.0.0.1/health/
+            pwd
