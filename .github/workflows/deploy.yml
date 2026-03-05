@@ -77,7 +77,29 @@ jobs:
           port: 22
           script_stop: true
           script: |
-            whoami
-            hostname
+            set -e
             cd /opt/study_planner
-            pwd
+            git pull origin main
+
+            docker compose -f docker-compose.prod.yml up -d --build --remove-orphans
+            docker compose -f docker-compose.prod.yml exec -T web python manage.py migrate --noinput
+            docker compose -f docker-compose.prod.yml exec -T web python manage.py collectstatic --noinput
+
+            # Refresh nginx after web recreate
+            docker compose -f docker-compose.prod.yml restart nginx
+
+            # Wait until health endpoint is ready
+            i=0
+            until curl -fsS http://127.0.0.1/health/ >/dev/null; do
+              i=$((i+1))
+              if [ "$i" -ge 20 ]; then
+                echo "Health check failed after retries"
+                docker compose -f docker-compose.prod.yml ps
+                docker compose -f docker-compose.prod.yml logs --tail=80 web
+                docker compose -f docker-compose.prod.yml logs --tail=80 nginx
+                exit 1
+              fi
+              sleep 3
+            done
+
+            echo "Deploy OK"
